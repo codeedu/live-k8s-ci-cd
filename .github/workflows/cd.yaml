@@ -1,8 +1,7 @@
 name: Deploy
 on:
     push:
-        tags:
-            - 'v*.*.*'
+        branches: [main]
 
 jobs:
     build:
@@ -32,6 +31,12 @@ jobs:
             username: ${{ secrets.DOCKERHUB_USERNAME}}
             password: ${{ secrets.DOCKERHUB_TOKEN}}
 
+        - name: Bump version and push tag
+          id: tagging
+          uses: mathieudutour/github-tag-action@v4.5
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+
         - name: Build and push
           id: docker_build
           uses: docker/build-push-action@v2
@@ -39,7 +44,7 @@ jobs:
             context: .
             file: ./Dockerfile
             platforms: linux/amd64,linux/arm64,linux/386
-            tags: ${{steps.docker_meta.outputs.tags}}
+            tags: ${{ steps.tagging.outputs.new_version }}
             labels: ${{steps.docker_meta.outputs.labels}}
 
         - name: Install doctl
@@ -54,4 +59,4 @@ jobs:
             clusterName: live-k8s
 
         - name: set deployment image
-          run: kubectl set image deployment goserver goserver=wesleywillians/avancadev-dev-k8sgo:${{steps.docker_meta.outputs.tags}}
+          run: kubectl set image deployment goserver goserver=wesleywillians/avancadev-dev-k8sgo:${{ steps.tagging.outputs.new_version }}
