@@ -45,7 +45,7 @@ jobs:
             context: .
             file: ./Dockerfile
             platforms: linux/amd64,linux/arm64,linux/386
-            tags: ${{ steps.tagging.outputs.new_version }}
+            tags: wesleywillians/avancadev-dev-k8sgo:${{ steps.tagging.outputs.new_version }}
 
         - name: Install doctl
           uses: digitalocean/action-doctl@v2
